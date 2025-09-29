@@ -15,10 +15,10 @@ COPY backend/server.js ./
 # Copy frontend
 COPY frontend/index.html /usr/share/nginx/html/
 
-# Configure nginx
+# Configure nginx to listen on 8080 and proxy to 3005
 RUN cat > /etc/nginx/http.d/default.conf << 'EOF'
 server {
-    listen 80;
+    listen 8080;
     server_name _;
     
     location / {
@@ -28,14 +28,15 @@ server {
     }
     
     location /api/ {
-        proxy_pass http://127.0.0.1:3000/api/;
+        proxy_pass http://127.0.0.1:3005/api/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
         client_max_body_size 50M;
     }
     
     location /health {
-        proxy_pass http://127.0.0.1:3000/health;
+        proxy_pass http://127.0.0.1:3005/health;
     }
 }
 EOF
@@ -45,24 +46,41 @@ RUN cat > /start.sh << 'EOF'
 #!/bin/sh
 set -e
 
+echo "Starting Love Journey application..."
+echo "Backend will run on port 3005"
+echo "Nginx will run on port 8080"
+
+# Start backend on port 3005
 echo "Starting backend server..."
-node /app/server.js &
+PORT=3005 node /app/server.js &
 BACKEND_PID=$!
 
+# Wait for backend to be ready
 echo "Waiting for backend to start..."
-sleep 5
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    if curl -f http://127.0.0.1:3005/health > /dev/null 2>&1; then
+        echo "Backend is ready!"
+        break
+    fi
+    echo "Waiting for backend... ($i/10)"
+    sleep 2
+done
 
-# Check if backend is running
-if ! kill -0 $BACKEND_PID 2>/dev/null; then
+# Verify backend is running
+if ! curl -f http://127.0.0.1:3005/health > /dev/null 2>&1; then
     echo "Backend failed to start!"
     exit 1
 fi
 
-echo "Starting nginx..."
+# Start nginx on port 8080
+echo "Starting nginx on port 8080..."
 nginx -g "daemon off;" &
 NGINX_PID=$!
 
-# Wait for either process to exit
+echo "Application started successfully!"
+echo "Access the app on port 8080"
+
+# Keep container running
 wait -n $BACKEND_PID $NGINX_PID
 EXIT_CODE=$?
 
@@ -74,10 +92,11 @@ EOF
 
 RUN chmod +x /start.sh
 
-EXPOSE 80
+# Expose port 8080 instead of 80
+EXPOSE 8080
 
-# Simple health check - just check nginx root
+# Health check on port 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=5 \
-  CMD curl -f http://localhost/ || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
 CMD ["/start.sh"]
