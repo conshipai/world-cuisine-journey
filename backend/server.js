@@ -7,19 +7,29 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Simplified MongoDB connection
+// MongoDB connection
 let mongoUri = process.env.MONGODB_URI;
 let dbName = 'love_journey';
 
 if (!mongoUri) {
     console.error('MONGODB_URI environment variable is not set!');
+    console.error('Please set MONGODB_URI in your environment variables');
     process.exit(1);
 }
 
-// Parse database name from URI if present
-const uriMatch = mongoUri.match(/\/([^/?]+)(\?|$)/);
-if (uriMatch && uriMatch[1] !== '') {
-    dbName = uriMatch[1];
+// Parse database name from URI
+const dbNameMatch = mongoUri.match(/\/([^/?]+)(\?|$)/);
+if (dbNameMatch && dbNameMatch[1]) {
+    dbName = dbNameMatch[1];
+    console.log('Using database from URI:', dbName);
+} else {
+    // If no database in URI, append it
+    if (mongoUri.includes('?')) {
+        mongoUri = mongoUri.replace('?', '/love_journey?');
+    } else {
+        mongoUri = mongoUri + '/love_journey';
+    }
+    console.log('Database name not found in URI, using default:', dbName);
 }
 
 console.log('Connecting to MongoDB...');
