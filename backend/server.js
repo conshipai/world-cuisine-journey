@@ -9,12 +9,26 @@ const PORT = process.env.PORT || 3000;
 
 // MongoDB connection string - use direct URI if provided, otherwise build from components
 let mongoUri;
+let dbName = 'love_journey';
 
 if (process.env.MONGODB_URI) {
     // Use the complete URI if provided (for existing MongoDB instances)
     mongoUri = process.env.MONGODB_URI;
-    // Change the database name in the URI to love_journey
-    mongoUri = mongoUri.replace(/\/freight\?/, '/love_journey?');
+    
+    // If URI doesn't include database name, add it
+    if (!mongoUri.includes('/love_journey')) {
+        // Check if it ends with just port or has query params
+        if (mongoUri.includes('/?')) {
+            // Has query params but no database
+            mongoUri = mongoUri.replace('/?', '/love_journey?');
+        } else if (mongoUri.endsWith(':27017')) {
+            // Just ends with port
+            mongoUri = mongoUri + '/love_journey?directConnection=true';
+        } else {
+            // Try to replace freight with love_journey if present
+            mongoUri = mongoUri.replace(/\/freight\?/, '/love_journey?');
+        }
+    }
 } else {
     // Build from individual components (for docker-compose setup)
     const MONGO_HOST = process.env.MONGO_HOST || 'mongodb';
@@ -51,7 +65,7 @@ MongoClient.connect(mongoUri, {
 })
 .then(client => {
     console.log('Connected to MongoDB successfully!');
-    db = client.db('love_journey');
+    db = client.db(MONGO_DB);
     journeyCollection = db.collection('destinations');
     
     // Create indexes for better performance
