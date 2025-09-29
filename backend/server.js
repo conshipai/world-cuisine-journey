@@ -5,7 +5,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 // MongoDB connection
 let mongoUri = process.env.MONGODB_URI;
@@ -341,10 +341,22 @@ app.post('/api/destinations/import', async (req, res) => {
     }
 });
 
-// Start server
-app.listen(PORT, '0.0.0.0', () => {
+// Start server - bind to all interfaces
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Server is listening on all interfaces`);
+    console.log(`Note: Nginx will proxy from port 80 to backend on port ${PORT}`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+    console.error('Server error:', error);
+    if (error.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use`);
+        console.error('Please ensure no other service is using this port');
+        process.exit(1);
+    }
 });
 
 // Graceful shutdown
