@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Courtney & Thomas' World Cuisine Journey</title>
+    <title>Courtney & Thomas' Journey of Love</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Merriweather:wght@300;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
     
     <style>
         * {
@@ -19,55 +19,57 @@
         }
         
         body {
-            font-family: 'Merriweather', serif;
-            background: linear-gradient(135deg, #2c1810 0%, #8b4513 100%);
-            color: #f4e4c1;
+            font-family: 'Crimson Text', serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            color: #fff;
             min-height: 100vh;
         }
         
         .header {
             text-align: center;
             padding: 30px 20px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 100%);
-            border-bottom: 3px solid #d4af37;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border-bottom: 2px solid rgba(255,182,193,0.5);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
         
         .header::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 100px,
-                rgba(212, 175, 55, 0.1) 100px,
-                rgba(212, 175, 55, 0.1) 200px
-            );
-            pointer-events: none;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,182,193,0.1) 0%, transparent 70%);
+            animation: shimmer 15s infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
         }
         
         h1 {
-            font-family: 'Bebas Neue', cursive;
+            font-family: 'Dancing Script', cursive;
             font-size: 3.5em;
-            color: #d4af37;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-            letter-spacing: 3px;
+            background: linear-gradient(90deg, #FFB6C1, #FFC0CB, #FFE4E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            letter-spacing: 2px;
             position: relative;
             z-index: 1;
         }
         
         .subtitle {
-            font-size: 1.2em;
-            color: #f4e4c1;
+            font-size: 1.3em;
+            color: #FFE4E1;
             margin-top: 10px;
-            font-weight: 300;
             position: relative;
             z-index: 1;
+            font-style: italic;
         }
         
         .lock-indicator {
@@ -77,14 +79,15 @@
             font-size: 1.5em;
             cursor: pointer;
             z-index: 10;
-            background: rgba(0,0,0,0.5);
+            background: rgba(255,255,255,0.2);
             padding: 10px;
             border-radius: 50%;
             transition: all 0.3s;
+            backdrop-filter: blur(5px);
         }
         
         .lock-indicator:hover {
-            background: rgba(0,0,0,0.7);
+            background: rgba(255,255,255,0.3);
             transform: scale(1.1);
         }
         
@@ -106,27 +109,28 @@
         }
         
         .password-box {
-            background: linear-gradient(135deg, #2c1810 0%, #8b4513 100%);
-            border: 3px solid #d4af37;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid #FFB6C1;
+            border-radius: 15px;
             padding: 30px;
             text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         
         .password-box h3 {
-            font-family: 'Bebas Neue', cursive;
+            font-family: 'Dancing Script', cursive;
             font-size: 2em;
-            color: #d4af37;
+            color: #FFE4E1;
             margin-bottom: 20px;
         }
         
         .password-box input {
             padding: 10px;
             font-size: 1.1em;
-            border: 2px solid #d4af37;
+            border: 2px solid #FFB6C1;
             border-radius: 5px;
-            background: rgba(0,0,0,0.3);
-            color: #f4e4c1;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
             margin-bottom: 15px;
         }
         
@@ -140,17 +144,16 @@
             max-width: 1200px;
             height: 500px;
             margin: 30px auto;
-            border: 5px solid #d4af37;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            background: #2c1810;
+            border: 3px solid rgba(255,182,193,0.5);
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            background: #fff;
+            overflow: hidden;
         }
         
         #map {
             width: 100%;
             height: 100%;
-            border-radius: 5px;
-            filter: sepia(30%) contrast(1.1);
         }
         
         .controls {
@@ -163,20 +166,20 @@
         }
         
         .panel {
-            background: rgba(0,0,0,0.6);
-            border: 2px solid #d4af37;
-            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,182,193,0.5);
+            border-radius: 15px;
             padding: 25px;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
         }
         
         .panel h2 {
-            font-family: 'Bebas Neue', cursive;
-            font-size: 2em;
-            color: #d4af37;
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.2em;
+            color: #FFE4E1;
             margin-bottom: 20px;
             text-align: center;
-            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
         
         .form-group {
@@ -186,23 +189,24 @@
         label {
             display: block;
             margin-bottom: 5px;
-            color: #d4af37;
-            font-weight: bold;
-            font-size: 0.9em;
+            color: #FFE4E1;
+            font-weight: 600;
+            font-size: 1em;
         }
         
         input, textarea, select {
             width: 100%;
             padding: 10px;
-            background: rgba(244, 228, 193, 0.1);
-            border: 1px solid #d4af37;
-            border-radius: 5px;
-            color: #f4e4c1;
-            font-family: 'Merriweather', serif;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,182,193,0.5);
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Crimson Text', serif;
+            font-size: 1em;
         }
         
         input::placeholder, textarea::placeholder {
-            color: rgba(244, 228, 193, 0.5);
+            color: rgba(255,255,255,0.6);
         }
         
         textarea {
@@ -211,25 +215,25 @@
         }
         
         button {
-            background: linear-gradient(135deg, #d4af37 0%, #b8941c 100%);
-            color: #2c1810;
+            background: linear-gradient(135deg, #FF69B4 0%, #FFB6C1 100%);
+            color: #fff;
             border: none;
             padding: 12px 25px;
-            border-radius: 5px;
-            font-family: 'Bebas Neue', cursive;
-            font-size: 1.2em;
-            letter-spacing: 1px;
+            border-radius: 25px;
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1em;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
             width: 100%;
             margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15px rgba(255,105,180,0.3);
         }
         
         button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-            background: linear-gradient(135deg, #e5c048 0%, #c9a52d 100%);
+            box-shadow: 0 6px 20px rgba(255,105,180,0.4);
+            background: linear-gradient(135deg, #FF1493 0%, #FF69B4 100%);
         }
         
         button:disabled {
@@ -248,19 +252,19 @@
         }
         
         .journey-list::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.1);
             border-radius: 5px;
         }
         
         .journey-list::-webkit-scrollbar-thumb {
-            background: #d4af37;
+            background: #FFB6C1;
             border-radius: 5px;
         }
         
         .destination-card {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid #d4af37;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,182,193,0.5);
+            border-radius: 12px;
             padding: 15px;
             margin-bottom: 15px;
             transition: all 0.3s;
@@ -268,14 +272,14 @@
         }
         
         .destination-card:hover {
-            background: rgba(212, 175, 55, 0.2);
+            background: rgba(255,255,255,0.15);
             transform: translateX(5px);
         }
         
         .destination-number {
             display: inline-block;
-            background: #d4af37;
-            color: #2c1810;
+            background: linear-gradient(135deg, #FF69B4, #FFB6C1);
+            color: #fff;
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -286,22 +290,28 @@
         }
         
         .destination-city {
-            font-size: 1.2em;
-            color: #d4af37;
-            margin-bottom: 10px;
-            font-weight: bold;
+            font-size: 1.3em;
+            color: #FFE4E1;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .destination-restaurant {
+            font-size: 1.1em;
+            color: #FFB6C1;
+            margin-bottom: 5px;
+            font-style: italic;
         }
         
         .destination-meal {
-            font-style: italic;
             margin-bottom: 8px;
-            color: #f4e4c1;
+            color: #FFC0CB;
         }
         
         .destination-experience {
-            font-size: 0.9em;
+            font-size: 0.95em;
             line-height: 1.5;
-            color: rgba(244, 228, 193, 0.9);
+            color: rgba(255,255,255,0.9);
         }
         
         .delete-btn {
@@ -312,7 +322,7 @@
             color: white;
             border: none;
             padding: 5px 10px;
-            border-radius: 3px;
+            border-radius: 5px;
             font-size: 0.8em;
             cursor: pointer;
             display: none;
@@ -325,7 +335,7 @@
         .photo-preview {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 8px;
             margin-top: 10px;
         }
         
@@ -333,8 +343,14 @@
             width: 100px;
             height: 75px;
             object-fit: cover;
-            border-radius: 5px;
-            border: 2px solid #d4af37;
+            border-radius: 8px;
+            border: 2px solid #FFB6C1;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .photo-preview img:hover {
+            transform: scale(1.05);
         }
         
         .file-input-wrapper {
@@ -352,17 +368,18 @@
         .file-input-label {
             display: block;
             width: 100%;
-            padding: 10px;
-            background: rgba(212, 175, 55, 0.2);
-            border: 2px dashed #d4af37;
-            border-radius: 5px;
+            padding: 12px;
+            background: rgba(255,182,193,0.2);
+            border: 2px dashed rgba(255,182,193,0.5);
+            border-radius: 8px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
+            color: #FFE4E1;
         }
         
         .file-input-label:hover {
-            background: rgba(212, 175, 55, 0.3);
+            background: rgba(255,182,193,0.3);
         }
         
         .uploaded-images {
@@ -382,8 +399,9 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 5px;
-            border: 2px solid #d4af37;
+            border-radius: 8px;
+            border: 2px solid #FFB6C1;
+            cursor: pointer;
         }
         
         .remove-image {
@@ -401,23 +419,54 @@
             line-height: 1;
         }
         
+        /* Full screen image modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .image-modal.active {
+            display: flex;
+        }
+        
+        .image-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            font-size: 40px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .heart-icon {
+            color: #FF69B4;
+            font-size: 1.2em;
+        }
+        
         .plane-icon {
             width: 30px;
             height: 30px;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23d4af37"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>');
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23FF69B4"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>');
             background-size: contain;
             background-repeat: no-repeat;
-        }
-        
-        .loading-plane {
-            animation: fly 3s ease-in-out infinite;
-        }
-        
-        @keyframes fly {
-            0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
-            25% { transform: translateX(10px) translateY(-5px) rotate(-5deg); }
-            50% { transform: translateX(0) translateY(-10px) rotate(0deg); }
-            75% { transform: translateX(-10px) translateY(-5px) rotate(5deg); }
         }
         
         @keyframes drawPath {
@@ -429,6 +478,11 @@
         .animated-path {
             stroke-dasharray: 12 8;
             animation: drawPath 2s ease-out forwards;
+        }
+        
+        .clear-data-btn {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            margin-top: 20px;
         }
         
         @media (max-width: 768px) {
@@ -448,8 +502,8 @@
 </head>
 <body>
     <div class="header">
-        <h1>✈️ Courtney & Thomas' World Cuisine Journey ✈️</h1>
-        <div class="subtitle">An Epic Culinary Adventure Around the Globe</div>
+        <h1><span class="heart-icon">💕</span> Courtney & Thomas' Journey of Love <span class="heart-icon">💕</span></h1>
+        <div class="subtitle">A Culinary Love Story Around the World</div>
         <div class="lock-indicator" id="lockIcon" onclick="toggleEditMode()">🔒</div>
     </div>
     
@@ -459,9 +513,15 @@
             <h3>Enter Password to Edit</h3>
             <input type="password" id="passwordInput" placeholder="Enter password">
             <br>
-            <button onclick="checkPassword()">Unlock</button>
+            <button onclick="checkPassword()">Unlock with Love</button>
             <button onclick="closePasswordModal()">Cancel</button>
         </div>
+    </div>
+    
+    <!-- Full Screen Image Modal -->
+    <div class="image-modal" id="imageModal" onclick="closeImageModal()">
+        <span class="image-modal-close">&times;</span>
+        <img id="modalImage" src="" alt="Full size photo">
     </div>
     
     <div class="map-container">
@@ -470,7 +530,7 @@
     
     <div class="controls">
         <div class="panel">
-            <h2>Add New Destination</h2>
+            <h2>Add New Memory</h2>
             <form id="destinationForm">
                 <div class="form-group">
                     <label for="city">City Name</label>
@@ -478,36 +538,42 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="meal">Meal/Dish Name</label>
-                    <input type="text" id="meal" placeholder="e.g., Authentic Croissants & Café au Lait" required disabled>
+                    <label for="restaurant">Restaurant Name</label>
+                    <input type="text" id="restaurant" placeholder="e.g., Le Jules Verne" required disabled>
                 </div>
                 
                 <div class="form-group">
-                    <label for="photoUpload">Upload Photos</label>
+                    <label for="meal">Meal/Dish Name</label>
+                    <input type="text" id="meal" placeholder="e.g., Coq au Vin with Champagne" required disabled>
+                </div>
+                
+                <div class="form-group">
+                    <label for="photoUpload">Capture the Moment</label>
                     <div class="file-input-wrapper">
                         <input type="file" id="photoUpload" accept="image/*" multiple disabled onchange="handlePhotoUpload(event)">
                         <label for="photoUpload" class="file-input-label" id="photoLabel">
-                            📷 Click to upload photos (or take on mobile)
+                            📷 Upload Photos of Your Love Story
                         </label>
                     </div>
                     <div class="uploaded-images" id="uploadedImages"></div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="experience">Experience & Memories</label>
-                    <textarea id="experience" placeholder="Describe your culinary adventure, the atmosphere, flavors, and special moments..." required disabled></textarea>
+                    <label for="experience">Our Story Here</label>
+                    <textarea id="experience" placeholder="Describe the magic of this moment, the flavors, the atmosphere, and how it added to your love story..." required disabled></textarea>
                 </div>
                 
-                <button type="submit" disabled>🔒 Unlock to Add Destinations</button>
+                <button type="submit" disabled>🔒 Unlock to Add Memories</button>
             </form>
         </div>
         
         <div class="panel">
-            <h2>Our Journey So Far</h2>
+            <h2>Our Love Story</h2>
             <div class="journey-list" id="journeyList">
                 <!-- Journey items will be populated here -->
             </div>
-            <button onclick="exportJourney()">Export Journey Data</button>
+            <button onclick="exportJourney()">💝 Export Our Journey</button>
+            <button onclick="clearAllData()" class="clear-data-btn" style="display:none;" id="clearBtn">🗑️ Start Fresh</button>
         </div>
     </div>
     
@@ -522,47 +588,51 @@
         let markers = [];
         let polylines = [];
         
-        // Load data from localStorage on page load
-        function loadDataFromStorage() {
-            const savedData = localStorage.getItem('cuisineJourneyData');
-            if (savedData) {
-                journeyData = JSON.parse(savedData);
-            } else {
-                // Default starting point
-                journeyData = [
-                    {
-                        city: "Houston, Texas",
-                        coords: [29.7604, -95.3698],
-                        meal: "Starting Point - Home Base",
-                        photos: [],
-                        experience: "Where our culinary adventure begins!"
-                    }
-                ];
-            }
-            updateMapAndList();
-        }
+        // API base URL - will use relative path since nginx proxies /api/
+        const API_BASE = '/api';
         
-        // Save data to localStorage
-        function saveDataToStorage() {
-            localStorage.setItem('cuisineJourneyData', JSON.stringify(journeyData));
-        }
+        // Load data from MongoDB on page load
+        async function loadDataFromStorage() {
+            try {
+                const response = await fetch(`${API_BASE}/destinations`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    journeyData = result.data || [];
+                    console.log(`Loaded ${journeyData.length} destinations from database`);
+                } else {
+                    console.error('Failed to load destinations:', result.error);
+                    journeyData = [];
+                }
+            } catch (error) {
+                console.error('Error loading destinations:', error);
+                // Try to load from localStorage as fallback
+                const savedData = localStorage.getItem('cuisineJourneyData');
+                if (savedData) {
+                    journeyData = JSON.parse(savedData);
+                    console.log('Loaded from localStorage as fallback');
+                    // Offer to migrate to database
+                    if (journeyData.length > 0) {
+                        if (confirm('Found local data. Would you like to migrate it to the database?')) {
+                            await migrateToDatabase();
+    
         
         // Initialize map
-        const map = L.map('map').setView([29.7604, -95.3698], 3);
+        const map = L.map('map').setView([20, 0], 2);
         
-        // Add vintage-style tile layer
+        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18
         }).addTo(map);
         
-        // Custom red circle icon for destinations
-        function createRedCircleIcon() {
+        // Custom heart icon for destinations
+        function createHeartIcon() {
             return L.divIcon({
-                html: '<div style="background-color: #dc3545; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
-                iconSize: [20, 20],
-                iconAnchor: [10, 10],
-                className: 'red-circle-marker'
+                html: '<div style="font-size: 24px;">💕</div>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                className: 'heart-marker'
             });
         }
         
@@ -602,6 +672,17 @@
             document.getElementById('passwordInput').value = '';
         }
         
+        // Show full size image
+        function showFullImage(imageSrc) {
+            document.getElementById('modalImage').src = imageSrc;
+            document.getElementById('imageModal').classList.add('active');
+        }
+        
+        // Close image modal
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
+        
         // Unlock edit mode
         function unlockEditMode() {
             isEditMode = true;
@@ -609,11 +690,15 @@
             
             // Enable form inputs
             document.getElementById('city').disabled = false;
+            document.getElementById('restaurant').disabled = false;
             document.getElementById('meal').disabled = false;
             document.getElementById('photoUpload').disabled = false;
             document.getElementById('experience').disabled = false;
             document.querySelector('#destinationForm button').disabled = false;
-            document.querySelector('#destinationForm button').textContent = 'Add to Journey';
+            document.querySelector('#destinationForm button').textContent = '💕 Add to Our Story';
+            
+            // Show clear button
+            document.getElementById('clearBtn').style.display = 'block';
             
             // Add edit mode class to show delete buttons
             document.getElementById('journeyList').classList.add('edit-mode');
@@ -628,11 +713,15 @@
             
             // Disable form inputs
             document.getElementById('city').disabled = true;
+            document.getElementById('restaurant').disabled = true;
             document.getElementById('meal').disabled = true;
             document.getElementById('photoUpload').disabled = true;
             document.getElementById('experience').disabled = true;
             document.querySelector('#destinationForm button').disabled = true;
-            document.querySelector('#destinationForm button').textContent = '🔒 Unlock to Add Destinations';
+            document.querySelector('#destinationForm button').textContent = '🔒 Unlock to Add Memories';
+            
+            // Hide clear button
+            document.getElementById('clearBtn').style.display = 'none';
             
             // Remove edit mode class
             document.getElementById('journeyList').classList.remove('edit-mode');
@@ -655,7 +744,7 @@
                     const imageWrapper = document.createElement('div');
                     imageWrapper.className = 'uploaded-image';
                     imageWrapper.innerHTML = `
-                        <img src="${imageData}" alt="Uploaded photo">
+                        <img src="${imageData}" alt="Uploaded photo" onclick="showFullImage('${imageData}')">
                         <button class="remove-image" onclick="removeUploadedPhoto(${uploadedPhotos.length - 1})">×</button>
                     `;
                     uploadedImagesDiv.appendChild(imageWrapper);
@@ -679,7 +768,7 @@
                 const imageWrapper = document.createElement('div');
                 imageWrapper.className = 'uploaded-image';
                 imageWrapper.innerHTML = `
-                    <img src="${photo}" alt="Uploaded photo">
+                    <img src="${photo}" alt="Uploaded photo" onclick="showFullImage('${photo}')">
                     <button class="remove-image" onclick="removeUploadedPhoto(${index})">×</button>
                 `;
                 uploadedImagesDiv.appendChild(imageWrapper);
@@ -688,12 +777,7 @@
         
         // Delete destination
         function deleteDestination(index) {
-            if (index === 0) {
-                alert("Cannot delete the starting point!");
-                return;
-            }
-            
-            if (confirm(`Delete destination: ${journeyData[index].city}?`)) {
+            if (confirm(`Remove ${journeyData[index].city} from your journey?`)) {
                 journeyData.splice(index, 1);
                 saveDataToStorage();
                 updateMapAndList();
@@ -737,9 +821,9 @@
                 curvePoints.push([lat, lng]);
             }
             
-            // Red dashed line (Indiana Jones style)
+            // Pink dashed line for love theme
             const polyline = L.polyline(curvePoints, {
-                color: '#dc3545',  // Red color
+                color: '#FF69B4',  // Hot pink color
                 weight: 3,
                 opacity: 0.8,
                 dashArray: '12, 8',
@@ -748,7 +832,7 @@
             
             polylines.push(polyline);
             
-            // Animate a plane along the path (slower - increased interval time)
+            // Animate a plane along the path (slower)
             let planeMarker = L.marker(startCoords, {icon: planeIcon}).addTo(map);
             let step = 0;
             
@@ -760,13 +844,19 @@
                 }
                 
                 planeMarker.setLatLng(curvePoints[step]);
-                step += 1;  // Reduced from 2 to 1 for slower movement
-            }, 60);  // Increased from 30ms to 60ms for slower animation
+                step += 1;
+            }, 60);  // Slower animation
         }
         
         // Update journey list display
         function updateJourneyList() {
             const listContainer = document.getElementById('journeyList');
+            
+            if (journeyData.length === 0) {
+                listContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: #FFE4E1;">Start your journey by adding your first destination!</div>';
+                return;
+            }
+            
             listContainer.innerHTML = '';
             
             journeyData.forEach((destination, index) => {
@@ -778,19 +868,20 @@
                     photosHtml = '<div class="photo-preview">';
                     destination.photos.forEach(photo => {
                         if (photo && photo.trim()) {
-                            photosHtml += `<img src="${photo.trim()}" alt="Food photo">`;
+                            photosHtml += `<img src="${photo.trim()}" alt="Food photo" onclick="showFullImage('${photo.trim()}')">`;
                         }
                     });
                     photosHtml += '</div>';
                 }
                 
-                const deleteButton = isEditMode && index > 0 ? 
-                    `<button class="delete-btn" onclick="deleteDestination(${index})">Delete</button>` : '';
+                const deleteButton = isEditMode ? 
+                    `<button class="delete-btn" onclick="deleteDestination(${index})">Remove</button>` : '';
                 
                 card.innerHTML = `
                     ${deleteButton}
                     <span class="destination-number">${index + 1}</span>
                     <div class="destination-city">${destination.city}</div>
+                    ${destination.restaurant ? `<div class="destination-restaurant">🍷 ${destination.restaurant}</div>` : ''}
                     <div class="destination-meal">🍽️ ${destination.meal}</div>
                     <div class="destination-experience">${destination.experience}</div>
                     ${photosHtml}
@@ -810,15 +901,19 @@
             
             // Add markers and paths
             journeyData.forEach((destination, index) => {
-                const marker = L.marker(destination.coords, {icon: createRedCircleIcon()})
-                    .bindPopup(`<b>${destination.city}</b><br>🍽️ ${destination.meal}<br>${destination.experience}`)
+                const popupContent = destination.restaurant ? 
+                    `<b>${destination.city}</b><br>🍷 ${destination.restaurant}<br>🍽️ ${destination.meal}<br>${destination.experience}` :
+                    `<b>${destination.city}</b><br>🍽️ ${destination.meal}<br>${destination.experience}`;
+                    
+                const marker = L.marker(destination.coords, {icon: createHeartIcon()})
+                    .bindPopup(popupContent)
                     .addTo(map);
                 markers.push(marker);
                 
                 if (index > 0) {
-                    // Red line connecting destinations
+                    // Pink line connecting destinations
                     const line = L.polyline([journeyData[index - 1].coords, destination.coords], {
-                        color: '#dc3545',  // Red color
+                        color: '#FF69B4',  // Hot pink color
                         weight: 3,
                         opacity: 0.8,
                         dashArray: '12, 8'
@@ -847,6 +942,7 @@
             }
             
             const cityInput = document.getElementById('city').value;
+            const restaurantInput = document.getElementById('restaurant').value;
             const mealInput = document.getElementById('meal').value;
             const experienceInput = document.getElementById('experience').value;
             
@@ -858,33 +954,39 @@
                 return;
             }
             
-            // Get previous destination coords
-            const prevDestination = journeyData[journeyData.length - 1];
-            const startCoords = prevDestination.coords;
             const endCoords = [location.lat, location.lng];
             
             // Add new destination to data
             const newDestination = {
                 city: cityInput,
                 coords: endCoords,
+                restaurant: restaurantInput,
                 meal: mealInput,
                 photos: [...uploadedPhotos],  // Copy uploaded photos
                 experience: experienceInput
             };
+            
+            // If there's a previous destination, animate from it
+            if (journeyData.length > 0) {
+                const prevDestination = journeyData[journeyData.length - 1];
+                const startCoords = prevDestination.coords;
+                animateFlightPath(startCoords, endCoords);
+            }
             
             journeyData.push(newDestination);
             
             // Save to localStorage
             saveDataToStorage();
             
-            // Add marker for new destination with red circle
-            const marker = L.marker(endCoords, {icon: createRedCircleIcon()})
-                .bindPopup(`<b>${cityInput}</b><br>🍽️ ${mealInput}<br>${experienceInput}`)
+            // Add marker for new destination with heart
+            const popupContent = restaurantInput ? 
+                `<b>${cityInput}</b><br>🍷 ${restaurantInput}<br>🍽️ ${mealInput}<br>${experienceInput}` :
+                `<b>${cityInput}</b><br>🍽️ ${mealInput}<br>${experienceInput}`;
+                
+            const marker = L.marker(endCoords, {icon: createHeartIcon()})
+                .bindPopup(popupContent)
                 .addTo(map);
             markers.push(marker);
-            
-            // Animate flight path
-            animateFlightPath(startCoords, endCoords);
             
             // Update the journey list
             updateJourneyList();
@@ -902,9 +1004,9 @@
             
             // Show success animation
             const button = this.querySelector('button[type="submit"]');
-            button.textContent = '✈️ Added Successfully!';
+            button.textContent = '💕 Added to Your Love Story!';
             setTimeout(() => {
-                button.textContent = 'Add to Journey';
+                button.textContent = '💕 Add to Our Story';
             }, 2000);
         });
         
@@ -915,7 +1017,7 @@
             const url = URL.createObjectURL(dataBlob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = 'courtney-thomas-cuisine-journey.json';
+            link.download = 'courtney-thomas-love-journey.json';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
