@@ -51,7 +51,7 @@ MongoClient.connect(mongoUri, {
 })
 .then(client => {
     console.log('Connected to MongoDB successfully!');
-    db = client.db(MONGO_DB);
+    db = client.db('love_journey');
     journeyCollection = db.collection('destinations');
     
     // Create indexes for better performance
