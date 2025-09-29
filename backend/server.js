@@ -7,86 +7,86 @@ const bodyParser = require('body-parser');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// MongoDB connection string - use direct URI if provided, otherwise build from components
-let mongoUri;
+// Simplified MongoDB connection
+let mongoUri = process.env.MONGODB_URI;
 let dbName = 'love_journey';
 
-if (process.env.MONGODB_URI) {
-    // Use the complete URI if provided (for existing MongoDB instances)
-    mongoUri = process.env.MONGODB_URI;
-    
-    // If URI doesn't include database name, add it
-    if (!mongoUri.includes('/love_journey')) {
-        // Check if it ends with just port or has query params
-        if (mongoUri.includes('/?')) {
-            // Has query params but no database
-            mongoUri = mongoUri.replace('/?', '/love_journey?');
-        } else if (mongoUri.endsWith(':27017')) {
-            // Just ends with port
-            mongoUri = mongoUri + '/love_journey?directConnection=true';
-        } else {
-            // Try to replace freight with love_journey if present
-            mongoUri = mongoUri.replace(/\/freight\?/, '/love_journey?');
-        }
-    }
-} else {
-    // Build from individual components (for docker-compose setup)
-    const MONGO_HOST = process.env.MONGO_HOST || 'mongodb';
-    const MONGO_PORT = process.env.MONGO_PORT || '27017';
-    const MONGO_DB = process.env.MONGO_DB || 'love_journey';
-    const MONGO_USER = process.env.MONGO_USER || '';
-    const MONGO_PASS = process.env.MONGO_PASS || '';
-    
-    if (MONGO_USER && MONGO_PASS) {
-        mongoUri = `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=admin`;
-    } else {
-        mongoUri = `mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}`;
-    }
+if (!mongoUri) {
+    console.error('MONGODB_URI environment variable is not set!');
+    process.exit(1);
 }
 
-console.log('Connecting to MongoDB at:', mongoUri.replace(/\/\/.*@/, '//<credentials>@'));
+// Parse database name from URI if present
+const uriMatch = mongoUri.match(/\/([^/?]+)(\?|$)/);
+if (uriMatch && uriMatch[1] !== '') {
+    dbName = uriMatch[1];
+}
+
+console.log('Connecting to MongoDB...');
+console.log('Database:', dbName);
+console.log('URI:', mongoUri.replace(/:\/\/([^:]+):([^@]+)@/, '://<user>:<pass>@'));
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json({ limit: '50mb' })); // Increased limit for image data
+app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
 // MongoDB client
 let db;
 let journeyCollection;
 
-// Connect to MongoDB
-MongoClient.connect(mongoUri, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    }
-})
-.then(client => {
-    console.log('Connected to MongoDB successfully!');
-    db = client.db(MONGO_DB);
-    journeyCollection = db.collection('destinations');
-    
-    // Create indexes for better performance
-    journeyCollection.createIndex({ timestamp: 1 }).catch(err => console.log('Index exists or error:', err));
-})
-.catch(err => {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-});
+// Connect to MongoDB with retry logic
+const connectWithRetry = () => {
+    MongoClient.connect(mongoUri, {
+        serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        },
+        connectTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 10000,
+    })
+    .then(client => {
+        console.log('Connected to MongoDB successfully!');
+        db = client.db(dbName);
+        journeyCollection = db.collection('destinations');
+        
+        // Create indexes for better performance
+        journeyCollection.createIndex({ timestamp: 1 })
+            .then(() => console.log('Index created or already exists'))
+            .catch(err => console.log('Index error:', err));
+    })
+    .catch(err => {
+        console.error('MongoDB connection error:', err.message);
+        console.log('Retrying connection in 5 seconds...');
+        setTimeout(connectWithRetry, 5000);
+    });
+};
+
+// Start connection
+connectWithRetry();
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.json({ 
-        status: 'healthy', 
-        mongodb: db ? 'connected' : 'disconnected',
+    const isConnected = db !== undefined;
+    const status = isConnected ? 'healthy' : 'connecting';
+    
+    res.status(isConnected ? 200 : 503).json({ 
+        status: status,
+        mongodb: isConnected ? 'connected' : 'disconnected',
         timestamp: new Date().toISOString()
     });
 });
 
 // Get all destinations
 app.get('/api/destinations', async (req, res) => {
+    if (!journeyCollection) {
+        return res.status(503).json({ 
+            success: false, 
+            error: 'Database connection not ready' 
+        });
+    }
+    
     try {
         const destinations = await journeyCollection
             .find({})
@@ -109,6 +109,13 @@ app.get('/api/destinations', async (req, res) => {
 
 // Add a new destination
 app.post('/api/destinations', async (req, res) => {
+    if (!journeyCollection) {
+        return res.status(503).json({ 
+            success: false, 
+            error: 'Database connection not ready' 
+        });
+    }
+    
     try {
         const destination = {
             ...req.body,
@@ -145,6 +152,13 @@ app.post('/api/destinations', async (req, res) => {
 
 // Update a destination
 app.put('/api/destinations/:id', async (req, res) => {
+    if (!journeyCollection) {
+        return res.status(503).json({ 
+            success: false, 
+            error: 'Database connection not ready' 
+        });
+    }
+    
     try {
         const { id } = req.params;
         const { ObjectId } = require('mongodb');
@@ -185,6 +199,13 @@ app.put('/api/destinations/:id', async (req, res) => {
 
 // Delete a destination
 app.delete('/api/destinations/:id', async (req, res) => {
+    if (!journeyCollection) {
+        return res.status(503).json({ 
+            success: false, 
+            error: 'Database connection not ready' 
+        });
+    }
+    
     try {
         const { id } = req.params;
         const { ObjectId } = require('mongodb');
@@ -215,6 +236,13 @@ app.delete('/api/destinations/:id', async (req, res) => {
 
 // Clear all destinations (protected with password)
 app.post('/api/destinations/clear', async (req, res) => {
+    if (!journeyCollection) {
+        return res.status(503).json({ 
+            success: false, 
+            error: 'Database connection not ready' 
+        });
+    }
+    
     try {
         const { password } = req.body;
         
@@ -244,6 +272,13 @@ app.post('/api/destinations/clear', async (req, res) => {
 
 // Import journey data (for restoring from export)
 app.post('/api/destinations/import', async (req, res) => {
+    if (!journeyCollection) {
+        return res.status(503).json({ 
+            success: false, 
+            error: 'Database connection not ready' 
+        });
+    }
+    
     try {
         const { password, destinations } = req.body;
         
@@ -305,8 +340,5 @@ app.listen(PORT, '0.0.0.0', () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
     console.log('SIGTERM signal received: closing HTTP server');
-    app.close(() => {
-        console.log('HTTP server closed');
-        process.exit(0);
-    });
+    process.exit(0);
 });
