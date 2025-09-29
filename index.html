@@ -70,6 +70,70 @@
             z-index: 1;
         }
         
+        .lock-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 10;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .lock-indicator:hover {
+            background: rgba(0,0,0,0.7);
+            transform: scale(1.1);
+        }
+        
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .password-modal.active {
+            display: flex;
+        }
+        
+        .password-box {
+            background: linear-gradient(135deg, #2c1810 0%, #8b4513 100%);
+            border: 3px solid #d4af37;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .password-box h3 {
+            font-family: 'Bebas Neue', cursive;
+            font-size: 2em;
+            color: #d4af37;
+            margin-bottom: 20px;
+        }
+        
+        .password-box input {
+            padding: 10px;
+            font-size: 1.1em;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            background: rgba(0,0,0,0.3);
+            color: #f4e4c1;
+            margin-bottom: 15px;
+        }
+        
+        .password-box button {
+            margin: 5px;
+        }
+        
         .map-container {
             position: relative;
             width: 90%;
@@ -162,10 +226,15 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         
-        button:hover {
+        button:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.4);
             background: linear-gradient(135deg, #e5c048 0%, #c9a52d 100%);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
         
         .journey-list {
@@ -195,6 +264,7 @@
             padding: 15px;
             margin-bottom: 15px;
             transition: all 0.3s;
+            position: relative;
         }
         
         .destination-card:hover {
@@ -232,6 +302,103 @@
             font-size: 0.9em;
             line-height: 1.5;
             color: rgba(244, 228, 193, 0.9);
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            cursor: pointer;
+            display: none;
+        }
+        
+        .edit-mode .delete-btn {
+            display: block;
+        }
+        
+        .photo-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .photo-preview img {
+            width: 100px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #d4af37;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: rgba(212, 175, 55, 0.2);
+            border: 2px dashed #d4af37;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background: rgba(212, 175, 55, 0.3);
+        }
+        
+        .uploaded-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .uploaded-image {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .uploaded-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 2px solid #d4af37;
+        }
+        
+        .remove-image {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
         }
         
         .plane-icon {
@@ -283,6 +450,18 @@
     <div class="header">
         <h1>✈️ Courtney & Thomas' World Cuisine Journey ✈️</h1>
         <div class="subtitle">An Epic Culinary Adventure Around the Globe</div>
+        <div class="lock-indicator" id="lockIcon" onclick="toggleEditMode()">🔒</div>
+    </div>
+    
+    <!-- Password Modal -->
+    <div class="password-modal" id="passwordModal">
+        <div class="password-box">
+            <h3>Enter Password to Edit</h3>
+            <input type="password" id="passwordInput" placeholder="Enter password">
+            <br>
+            <button onclick="checkPassword()">Unlock</button>
+            <button onclick="closePasswordModal()">Cancel</button>
+        </div>
     </div>
     
     <div class="map-container">
@@ -295,37 +474,38 @@
             <form id="destinationForm">
                 <div class="form-group">
                     <label for="city">City Name</label>
-                    <input type="text" id="city" placeholder="e.g., Paris, France" required>
+                    <input type="text" id="city" placeholder="e.g., Paris, France" required disabled>
                 </div>
                 
                 <div class="form-group">
                     <label for="meal">Meal/Dish Name</label>
-                    <input type="text" id="meal" placeholder="e.g., Authentic Croissants & Café au Lait" required>
+                    <input type="text" id="meal" placeholder="e.g., Authentic Croissants & Café au Lait" required disabled>
                 </div>
                 
                 <div class="form-group">
-                    <label for="photos">Photo URLs (comma-separated)</label>
-                    <input type="text" id="photos" placeholder="Optional: URL1, URL2">
+                    <label for="photoUpload">Upload Photos</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="photoUpload" accept="image/*" multiple disabled onchange="handlePhotoUpload(event)">
+                        <label for="photoUpload" class="file-input-label" id="photoLabel">
+                            📷 Click to upload photos (or take on mobile)
+                        </label>
+                    </div>
+                    <div class="uploaded-images" id="uploadedImages"></div>
                 </div>
                 
                 <div class="form-group">
                     <label for="experience">Experience & Memories</label>
-                    <textarea id="experience" placeholder="Describe your culinary adventure, the atmosphere, flavors, and special moments..." required></textarea>
+                    <textarea id="experience" placeholder="Describe your culinary adventure, the atmosphere, flavors, and special moments..." required disabled></textarea>
                 </div>
                 
-                <button type="submit" class="loading-plane">Add to Journey</button>
+                <button type="submit" disabled>🔒 Unlock to Add Destinations</button>
             </form>
         </div>
         
         <div class="panel">
             <h2>Our Journey So Far</h2>
             <div class="journey-list" id="journeyList">
-                <div class="destination-card">
-                    <span class="destination-number">1</span>
-                    <div class="destination-city">Houston, Texas</div>
-                    <div class="destination-meal">Starting Point - Home Base</div>
-                    <div class="destination-experience">Where our culinary adventure begins!</div>
-                </div>
+                <!-- Journey items will be populated here -->
             </div>
             <button onclick="exportJourney()">Export Journey Data</button>
         </div>
@@ -335,16 +515,37 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     
     <script>
-        // Initialize journey data
-        let journeyData = [
-            {
-                city: "Houston, Texas",
-                coords: [29.7604, -95.3698],
-                meal: "Starting Point - Home Base",
-                photos: [],
-                experience: "Where our culinary adventure begins!"
+        // Initialize variables
+        let isEditMode = false;
+        let uploadedPhotos = [];
+        let journeyData = [];
+        let markers = [];
+        let polylines = [];
+        
+        // Load data from localStorage on page load
+        function loadDataFromStorage() {
+            const savedData = localStorage.getItem('cuisineJourneyData');
+            if (savedData) {
+                journeyData = JSON.parse(savedData);
+            } else {
+                // Default starting point
+                journeyData = [
+                    {
+                        city: "Houston, Texas",
+                        coords: [29.7604, -95.3698],
+                        meal: "Starting Point - Home Base",
+                        photos: [],
+                        experience: "Where our culinary adventure begins!"
+                    }
+                ];
             }
-        ];
+            updateMapAndList();
+        }
+        
+        // Save data to localStorage
+        function saveDataToStorage() {
+            localStorage.setItem('cuisineJourneyData', JSON.stringify(journeyData));
+        }
         
         // Initialize map
         const map = L.map('map').setView([29.7604, -95.3698], 3);
@@ -355,6 +556,16 @@
             maxZoom: 18
         }).addTo(map);
         
+        // Custom red circle icon for destinations
+        function createRedCircleIcon() {
+            return L.divIcon({
+                html: '<div style="background-color: #dc3545; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>',
+                iconSize: [20, 20],
+                iconAnchor: [10, 10],
+                className: 'red-circle-marker'
+            });
+        }
+        
         // Custom plane icon
         const planeIcon = L.divIcon({
             html: '<div class="plane-icon"></div>',
@@ -363,15 +574,131 @@
             className: 'plane-marker'
         });
         
-        // Track all markers and polylines
-        let markers = [];
-        let polylines = [];
+        // Toggle edit mode
+        function toggleEditMode() {
+            if (!isEditMode) {
+                document.getElementById('passwordModal').classList.add('active');
+                document.getElementById('passwordInput').focus();
+            } else {
+                lockEditMode();
+            }
+        }
         
-        // Add initial Houston marker
-        const houstonMarker = L.marker([29.7604, -95.3698], {icon: planeIcon})
-            .bindPopup("<b>Houston, Texas</b><br>Our journey begins here!")
-            .addTo(map);
-        markers.push(houstonMarker);
+        // Check password
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === 'iloveyou') {
+                unlockEditMode();
+                closePasswordModal();
+            } else {
+                alert('Incorrect password');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+        
+        // Close password modal
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+            document.getElementById('passwordInput').value = '';
+        }
+        
+        // Unlock edit mode
+        function unlockEditMode() {
+            isEditMode = true;
+            document.getElementById('lockIcon').textContent = '🔓';
+            
+            // Enable form inputs
+            document.getElementById('city').disabled = false;
+            document.getElementById('meal').disabled = false;
+            document.getElementById('photoUpload').disabled = false;
+            document.getElementById('experience').disabled = false;
+            document.querySelector('#destinationForm button').disabled = false;
+            document.querySelector('#destinationForm button').textContent = 'Add to Journey';
+            
+            // Add edit mode class to show delete buttons
+            document.getElementById('journeyList').classList.add('edit-mode');
+            
+            updateJourneyList();
+        }
+        
+        // Lock edit mode
+        function lockEditMode() {
+            isEditMode = false;
+            document.getElementById('lockIcon').textContent = '🔒';
+            
+            // Disable form inputs
+            document.getElementById('city').disabled = true;
+            document.getElementById('meal').disabled = true;
+            document.getElementById('photoUpload').disabled = true;
+            document.getElementById('experience').disabled = true;
+            document.querySelector('#destinationForm button').disabled = true;
+            document.querySelector('#destinationForm button').textContent = '🔒 Unlock to Add Destinations';
+            
+            // Remove edit mode class
+            document.getElementById('journeyList').classList.remove('edit-mode');
+            
+            updateJourneyList();
+        }
+        
+        // Handle photo upload
+        function handlePhotoUpload(event) {
+            const files = event.target.files;
+            const uploadedImagesDiv = document.getElementById('uploadedImages');
+            
+            for (let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageData = e.target.result;
+                    uploadedPhotos.push(imageData);
+                    
+                    // Create preview
+                    const imageWrapper = document.createElement('div');
+                    imageWrapper.className = 'uploaded-image';
+                    imageWrapper.innerHTML = `
+                        <img src="${imageData}" alt="Uploaded photo">
+                        <button class="remove-image" onclick="removeUploadedPhoto(${uploadedPhotos.length - 1})">×</button>
+                    `;
+                    uploadedImagesDiv.appendChild(imageWrapper);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Remove uploaded photo
+        function removeUploadedPhoto(index) {
+            uploadedPhotos.splice(index, 1);
+            updateUploadedPhotosDisplay();
+        }
+        
+        // Update uploaded photos display
+        function updateUploadedPhotosDisplay() {
+            const uploadedImagesDiv = document.getElementById('uploadedImages');
+            uploadedImagesDiv.innerHTML = '';
+            
+            uploadedPhotos.forEach((photo, index) => {
+                const imageWrapper = document.createElement('div');
+                imageWrapper.className = 'uploaded-image';
+                imageWrapper.innerHTML = `
+                    <img src="${photo}" alt="Uploaded photo">
+                    <button class="remove-image" onclick="removeUploadedPhoto(${index})">×</button>
+                `;
+                uploadedImagesDiv.appendChild(imageWrapper);
+            });
+        }
+        
+        // Delete destination
+        function deleteDestination(index) {
+            if (index === 0) {
+                alert("Cannot delete the starting point!");
+                return;
+            }
+            
+            if (confirm(`Delete destination: ${journeyData[index].city}?`)) {
+                journeyData.splice(index, 1);
+                saveDataToStorage();
+                updateMapAndList();
+            }
+        }
         
         // Geocoding function using Nominatim
         async function geocodeCity(cityName) {
@@ -393,7 +720,7 @@
             }
         }
         
-        // Animate flight path
+        // Animate flight path (slower animation)
         function animateFlightPath(startCoords, endCoords) {
             // Create curved path (Great Circle route simulation)
             const midLat = (startCoords[0] + endCoords[0]) / 2;
@@ -410,9 +737,9 @@
                 curvePoints.push([lat, lng]);
             }
             
-            // Animated dashed line (Indiana Jones style)
+            // Red dashed line (Indiana Jones style)
             const polyline = L.polyline(curvePoints, {
-                color: '#d4af37',
+                color: '#dc3545',  // Red color
                 weight: 3,
                 opacity: 0.8,
                 dashArray: '12, 8',
@@ -421,7 +748,7 @@
             
             polylines.push(polyline);
             
-            // Animate a plane along the path
+            // Animate a plane along the path (slower - increased interval time)
             let planeMarker = L.marker(startCoords, {icon: planeIcon}).addTo(map);
             let step = 0;
             
@@ -433,8 +760,8 @@
                 }
                 
                 planeMarker.setLatLng(curvePoints[step]);
-                step += 2;
-            }, 30);
+                step += 1;  // Reduced from 2 to 1 for slower movement
+            }, 60);  // Increased from 30ms to 60ms for slower animation
         }
         
         // Update journey list display
@@ -448,16 +775,20 @@
                 
                 let photosHtml = '';
                 if (destination.photos && destination.photos.length > 0) {
-                    photosHtml = '<div style="margin-top: 10px;">';
+                    photosHtml = '<div class="photo-preview">';
                     destination.photos.forEach(photo => {
-                        if (photo.trim()) {
-                            photosHtml += `<img src="${photo.trim()}" style="width: 100px; height: 75px; object-fit: cover; margin-right: 5px; border-radius: 5px;" alt="Food photo">`;
+                        if (photo && photo.trim()) {
+                            photosHtml += `<img src="${photo.trim()}" alt="Food photo">`;
                         }
                     });
                     photosHtml += '</div>';
                 }
                 
+                const deleteButton = isEditMode && index > 0 ? 
+                    `<button class="delete-btn" onclick="deleteDestination(${index})">Delete</button>` : '';
+                
                 card.innerHTML = `
+                    ${deleteButton}
                     <span class="destination-number">${index + 1}</span>
                     <div class="destination-city">${destination.city}</div>
                     <div class="destination-meal">🍽️ ${destination.meal}</div>
@@ -469,13 +800,54 @@
             });
         }
         
+        // Update map with all destinations
+        function updateMapAndList() {
+            // Clear existing markers and polylines
+            markers.forEach(m => map.removeLayer(m));
+            polylines.forEach(p => map.removeLayer(p));
+            markers = [];
+            polylines = [];
+            
+            // Add markers and paths
+            journeyData.forEach((destination, index) => {
+                const marker = L.marker(destination.coords, {icon: createRedCircleIcon()})
+                    .bindPopup(`<b>${destination.city}</b><br>🍽️ ${destination.meal}<br>${destination.experience}`)
+                    .addTo(map);
+                markers.push(marker);
+                
+                if (index > 0) {
+                    // Red line connecting destinations
+                    const line = L.polyline([journeyData[index - 1].coords, destination.coords], {
+                        color: '#dc3545',  // Red color
+                        weight: 3,
+                        opacity: 0.8,
+                        dashArray: '12, 8'
+                    }).addTo(map);
+                    polylines.push(line);
+                }
+            });
+            
+            // Update journey list
+            updateJourneyList();
+            
+            // Fit map to show all markers
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+        
         // Handle form submission
         document.getElementById('destinationForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            if (!isEditMode) {
+                alert('Please unlock edit mode to add destinations');
+                return;
+            }
+            
             const cityInput = document.getElementById('city').value;
             const mealInput = document.getElementById('meal').value;
-            const photosInput = document.getElementById('photos').value;
             const experienceInput = document.getElementById('experience').value;
             
             // Geocode the city
@@ -496,14 +868,17 @@
                 city: cityInput,
                 coords: endCoords,
                 meal: mealInput,
-                photos: photosInput ? photosInput.split(',').map(p => p.trim()) : [],
+                photos: [...uploadedPhotos],  // Copy uploaded photos
                 experience: experienceInput
             };
             
             journeyData.push(newDestination);
             
-            // Add marker for new destination
-            const marker = L.marker(endCoords, {icon: planeIcon})
+            // Save to localStorage
+            saveDataToStorage();
+            
+            // Add marker for new destination with red circle
+            const marker = L.marker(endCoords, {icon: createRedCircleIcon()})
                 .bindPopup(`<b>${cityInput}</b><br>🍽️ ${mealInput}<br>${experienceInput}`)
                 .addTo(map);
             markers.push(marker);
@@ -522,9 +897,11 @@
             
             // Clear form
             this.reset();
+            uploadedPhotos = [];
+            document.getElementById('uploadedImages').innerHTML = '';
             
             // Show success animation
-            const button = this.querySelector('button');
+            const button = this.querySelector('button[type="submit"]');
             button.textContent = '✈️ Added Successfully!';
             setTimeout(() => {
                 button.textContent = 'Add to Journey';
@@ -545,46 +922,17 @@
             URL.revokeObjectURL(url);
         }
         
-        // Optional: Load journey data from JSON
-        function loadJourney(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const loadedData = JSON.parse(e.target.result);
-                    journeyData = loadedData;
-                    
-                    // Clear existing markers and polylines
-                    markers.forEach(m => map.removeLayer(m));
-                    polylines.forEach(p => map.removeLayer(p));
-                    markers = [];
-                    polylines = [];
-                    
-                    // Recreate journey on map
-                    journeyData.forEach((destination, index) => {
-                        const marker = L.marker(destination.coords, {icon: planeIcon})
-                            .bindPopup(`<b>${destination.city}</b><br>🍽️ ${destination.meal}<br>${destination.experience}`)
-                            .addTo(map);
-                        markers.push(marker);
-                        
-                        if (index > 0) {
-                            animateFlightPath(journeyData[index - 1].coords, destination.coords);
-                        }
-                    });
-                    
-                    // Update list
-                    updateJourneyList();
-                    
-                    // Fit map
-                    if (markers.length > 0) {
-                        const group = new L.featureGroup(markers);
-                        map.fitBounds(group.getBounds().pad(0.1));
-                    }
-                } catch (error) {
-                    alert('Error loading journey data');
-                }
-            };
-            reader.readAsText(file);
-        }
+        // Load data when page loads
+        window.addEventListener('load', function() {
+            loadDataFromStorage();
+        });
+        
+        // Allow Enter key to submit password
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkPassword();
+            }
+        });
     </script>
 </body>
 </html>
