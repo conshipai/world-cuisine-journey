@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  app:
+    image: i04800c4g0gwsw848wck0w4s:${SOURCE_COMMIT:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${COOLIFY_CONTAINER_NAME:-love-journey-app}
+    restart: unless-stopped
+    ports:
+      - "80"
+    environment:
+      - MONGODB_URI=${MONGODB_URI}
+      - NODE_ENV=production
+      - PORT=3000
+    networks:
+      - coolify
+    labels:
+      - "coolify.managed=true"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+networks:
+  coolify:
+    external: true
