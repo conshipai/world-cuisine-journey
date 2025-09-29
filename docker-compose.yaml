@@ -6,34 +6,29 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: journey-backend
     restart: unless-stopped
     environment:
       PORT: ${BACKEND_PORT:-3000}
       MONGODB_URI: ${MONGODB_URI}
     networks:
-      - journey-network
-    # NO PORTS EXPOSED - Coolify handles this
+      - coolify  # Use Coolify's default network where MongoDB lives
 
   # Frontend (Nginx)
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: journey-frontend
     restart: unless-stopped
     environment:
       - NGINX_PORT=80
     depends_on:
       - backend
     networks:
-      - journey-network
-    # NO PORTS EXPOSED - Coolify handles this
+      - coolify  # Same network
     labels:
-      # Tell Coolify this is the main service to expose
-      - "coolify.managed=true"
       - "coolify.port=80"
 
 networks:
-  journey-network:
-    driver: bridge
+  coolify:  # This is Coolify's default network
+    external: true
+    name: coolify
