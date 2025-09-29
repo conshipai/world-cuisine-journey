@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Backend API (No MongoDB container needed - using external)
+  # Backend API
   backend:
     build:
       context: ./backend
@@ -10,12 +10,10 @@ services:
     restart: unless-stopped
     environment:
       PORT: ${BACKEND_PORT:-3000}
-      # Use the full MongoDB URI from Coolify
       MONGODB_URI: ${MONGODB_URI}
     networks:
       - journey-network
-    ports:
-      - "${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}"
+    # NO PORTS EXPOSED - Coolify handles this
 
   # Frontend (Nginx)
   frontend:
@@ -25,13 +23,16 @@ services:
     container_name: journey-frontend
     restart: unless-stopped
     environment:
-      - NGINX_PORT=${NGINX_PORT:-80}
+      - NGINX_PORT=80
     depends_on:
       - backend
     networks:
       - journey-network
-    ports:
-      - "${NGINX_PORT:-80}:80"
+    # NO PORTS EXPOSED - Coolify handles this
+    labels:
+      # Tell Coolify this is the main service to expose
+      - "coolify.managed=true"
+      - "coolify.port=80"
 
 networks:
   journey-network:
