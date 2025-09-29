@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# IDE files
+.vscode/
+.idea/
+
+# Docker volumes (local testing)
+mongodb_data/
+data/
+
+# Backup files
+*.backup
+*.archive
+backup-*.archive
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# MongoDB dump files
+dump/
+*.bson
+*.json.gz
